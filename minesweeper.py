@@ -79,7 +79,22 @@ class Board:
             return
         if self.grid[click_y][click_x].type == Cell.TYPE_WALL:
             return
-        self.grid[click_y][click_x].status = Cell.STATUS_OPEN
+        self.openCell(click_x, click_y)
+
+    # マスを開く処理
+    def openCell(self, x, y):
+        self.grid[y][x].status = Cell.STATUS_OPEN
+        bombCount = self.bombCount(x, y)
+        if bombCount == 0 and self.grid[y][x].type == Cell.TYPE_EMPTY:
+            self.openCells(x, y)
+
+    # 周りのマスを全部開く
+    def openCells(self, x, y):
+        for iy in range(y-1, y+2):
+            for ix in range(x-1, x+2):
+                if self.grid[iy][ix].status == Cell.STATUS_CLOSE and self.grid[iy][ix].type == Cell.TYPE_EMPTY:
+                    self.openCell(ix, iy)
+
 class App:
     def __init__(self):
         pyxel.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Test", fps=60)
