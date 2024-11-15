@@ -54,9 +54,24 @@ class Board:
                 else:
                     if item.type == Cell.TYPE_EMPTY:
                         pyxel.blt(x*16,y*16,0, 16,0,16,16)
+                        bombCount = self.bombCount(x,y)
+                        if bombCount > 0:
+                            pyxel.text(x*16 + 5, y*16 + 5, f"{bombCount}", 4)
                     elif item.type == Cell.TYPE_BOMB:
                         pyxel.blt(x*16,y*16,0, 32,0,16,16)
 
+    # x,y座標の周りの爆弾の数を取得する
+    def bombCount(self, x, y):
+        count = 0
+        for iy in range(y-1, y+2):
+            for ix in range(x-1, x+2):
+                if ix == x and iy == y:
+                    continue
+                if self.grid[iy][ix].type == Cell.TYPE_BOMB:
+                    count += 1
+        return count
+
+    # ボードのクリック処理を実行
     def onClick(self, x, y):
         click_x = x//16
         click_y = y//16
