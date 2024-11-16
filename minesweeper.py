@@ -4,6 +4,20 @@ import random
 SCREEN_WIDTH = 256
 SCREEN_HEIGHT = 256
 
+
+def draw_text_with_border(x, y, s, col, bcol, font):
+    for dx in range(-1, 2):
+        for dy in range(-1, 2):
+            if dx != 0 or dy != 0:
+                pyxel.text(
+                    x + dx,
+                    y + dy,
+                    s,
+                    bcol,
+                    font,
+                )
+    pyxel.text(x, y, s, col, font)
+
 class Vec2:
     def __init__(self, x, y):
         self.x = x
@@ -152,6 +166,7 @@ class App:
         self.pos = Vec2(0,0)
         self.board = Board(10,10)
         self.scene = self.SCENE_INGAME
+        self.umplus12 = pyxel.Font("assets/umplus_j12r.bdf")
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -175,7 +190,7 @@ class App:
 
         # ゲームクリア
         if self.scene == App.SCENE_CLEAR:
-            pyxel.text(100, 5, "Game Clear!!", pyxel.frame_count % 16)
+            draw_text_with_border(75,5, "Game Clear!!", 7, 5, self.umplus12)
         
 App()
         
