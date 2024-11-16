@@ -38,7 +38,7 @@ class Board:
             self.grid[x][height+1].type = Cell.TYPE_WALL
 
         # 爆弾を設定
-        self.bombSize = 10
+        self.bombSize = 0
 
         for i in range(self.bombSize):
             self.grid[random.randrange(0,width)+1][random.randrange(0,height)+1].type = Cell.TYPE_BOMB
@@ -70,6 +70,26 @@ class Board:
                     elif item.type == Cell.TYPE_BOMB:
                         pyxel.blt(x*16 + self.start_x, y*16 + self.start_y, 0, 32,0,16,16)
         pyxel.text(0,0,f"BOMB = {self.bombSize}  FLAGS = {flags}", 5)
+
+    # クリアしたかチェック
+    # クリア = 爆弾以外を開いている かつ、全ての爆弾をチェックしている
+    def checkClear(self):
+        isAllOpen = True
+        isAllCheck = True
+
+        for iy in range(1, self.size_h):
+            for ix in range(1, self.size_w):
+                cell = self.grid[iy][ix]
+
+                # 空欄を全て開いているか
+                if cell.type == Cell.TYPE_EMPTY and cell.status != Cell.STATUS_OPEN:
+                    isAllOpen = False
+
+                # 爆弾をチェックしているか
+                if cell.type == Cell.TYPE_BOMB and cell.status != Cell.STATUS_CHECK:
+                    isAllCheck = False
+        return isAllCheck and isAllOpen
+
 
     # x,y座標の周りの爆弾の数を取得する
     def bombCount(self, x, y):
@@ -122,28 +142,40 @@ class Board:
                     self.openCell(ix, iy)
 
 class App:
+    SCENE_INGAME = 1
+    SCENE_GAME_OVER = 2
+    SCENE_CLEAR = 3
     def __init__(self):
         pyxel.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Test", fps=60)
         pyxel.load("data.pyxres")
         pyxel.mouse(True)
         self.pos = Vec2(0,0)
         self.board = Board(10,10)
+        self.scene = self.SCENE_INGAME
         pyxel.run(self.update, self.draw)
 
     def update(self):
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
 
-        if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-            self.board.onClick(pyxel.mouse_x, pyxel.mouse_y)
+        # ゲーム中
+        if self.scene == App.SCENE_INGAME:
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                self.board.onClick(pyxel.mouse_x, pyxel.mouse_y)
 
-        if pyxel.btnp(pyxel.MOUSE_BUTTON_RIGHT):
-            self.board.onRightClick(pyxel.mouse_x, pyxel.mouse_y)
-
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_RIGHT):
+                self.board.onRightClick(pyxel.mouse_x, pyxel.mouse_y)
+            if self.board.checkClear():
+                self.scene = App.SCENE_CLEAR
+        
     def draw(self):
         pyxel.cls(0)
         pyxel.text(55,41,"Hello, Pyxel!", pyxel.frame_count % 16)
         self.board.draw()
+
+        # ゲームクリア
+        if self.scene == App.SCENE_CLEAR:
+            pyxel.text(100, 5, "Game Clear!!", pyxel.frame_count % 16)
         
 App()
         
