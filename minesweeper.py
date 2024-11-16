@@ -163,6 +163,7 @@ class Board:
                     self.openCell(ix, iy)
 
 class App:
+    SCENE_TITLE = 0
     SCENE_INGAME = 1
     SCENE_GAME_OVER = 2
     SCENE_CLEAR = 3
@@ -172,13 +173,18 @@ class App:
         pyxel.mouse(True)
         self.pos = Vec2(0,0)
         self.board = Board(10,10)
-        self.scene = self.SCENE_INGAME
+        self.scene = self.SCENE_TITLE
         self.umplus12 = pyxel.Font("assets/umplus_j12r.bdf")
+        self.title_image = pyxel.Image.from_image(filename="assets/title3.png")
         pyxel.run(self.update, self.draw)
 
     def update(self):
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
+        # タイトル画面
+        if self.scene == App.SCENE_TITLE:
+            if pyxel.btnr(pyxel.MOUSE_BUTTON_LEFT) or pyxel.btnp(pyxel.KEY_SPACE):
+                self.scene = App.SCENE_INGAME
 
         # ゲーム中
         if self.scene == App.SCENE_INGAME:
@@ -192,12 +198,20 @@ class App:
         
     def draw(self):
         pyxel.cls(0)
-        pyxel.text(55,41,"Hello, Pyxel!", pyxel.frame_count % 16)
-        self.board.draw()
+
+        # タイトル画面
+        if self.scene == App.SCENE_TITLE:
+            pyxel.blt(x=10, y=20, img=self.title_image, u=0, v=0, w= 230, h=110, colkey=0)
+            draw_text_with_border(90,150, "Push Space Key", 7, 5, self.umplus12)
+
+        # ゲーム中
+        if self.scene == App.SCENE_INGAME:
+            self.board.draw()
 
         # ゲームクリア
         if self.scene == App.SCENE_CLEAR:
             draw_text_with_border(75,5, "Game Clear!!", 7, 5, self.umplus12)
+            self.board.draw()
         
 App()
         
