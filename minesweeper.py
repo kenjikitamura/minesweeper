@@ -198,6 +198,7 @@ class App:
         self.reset()
         self.umplus12 = pyxel.Font("assets/umplus_j12r.bdf")
         self.title_image = pyxel.Image.from_image(filename="assets/title3.png")
+        self.scene_change_wait = 0
         pyxel.run(self.update, self.draw)
 
     def update(self):
@@ -205,24 +206,31 @@ class App:
             pyxel.quit()
         # タイトル画面
         if self.scene == App.SCENE_TITLE:
-            if pyxel.btnr(pyxel.MOUSE_BUTTON_LEFT) or pyxel.btnp(pyxel.KEY_SPACE):
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) or pyxel.btnp(pyxel.KEY_SPACE) and self.scene_change_wait < 0:
                 self.scene = App.SCENE_INGAME
+                self.scene_change_wait = 30
 
         # ゲーム中
         if self.scene == App.SCENE_INGAME:
-            if pyxel.btnr(pyxel.MOUSE_BUTTON_LEFT):
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) and self.scene_change_wait < 0:
                 flag = self.board.onClick(pyxel.mouse_x, pyxel.mouse_y)
                 if flag is False:
                     self.scene = App.SCENE_GAME_OVER
+                    self.scene_change_wait = 30
 
-            if pyxel.btnr(pyxel.MOUSE_BUTTON_RIGHT):
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_RIGHT) and self.scene_change_wait < 0:
                 self.board.onRightClick(pyxel.mouse_x, pyxel.mouse_y)
             if self.board.checkClear():
                 self.scene = App.SCENE_CLEAR
+                self.scene_change_wait = 30
 
         # ゲームオーバー
         if self.scene == App.SCENE_GAME_OVER and self.board.bomb is not None:
             self.board.bomb.update()
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT) and self.scene_change_wait < 0:
+                self.reset()
+        
+        self.scene_change_wait -= 1
         
     def draw(self):
         pyxel.cls(0)
@@ -239,19 +247,18 @@ class App:
         # ゲームオーバー
         if self.scene == App.SCENE_GAME_OVER:
             self.board.draw()
-            draw_text_with_border(75,5, "Game Over!!", 7, 5, self.umplus12)
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-                self.reset()
+            draw_text_with_border(90,5, "Game Over!!", 7, 5, self.umplus12)
 
         # ゲームクリア
         if self.scene == App.SCENE_CLEAR:
-            draw_text_with_border(75,5, "Game Clear!!", 7, 5, self.umplus12)
+            draw_text_with_border(90,5, "Game Clear!!", 7, 5, self.umplus12)
             self.board.draw()
 
     # ゲーム開始またはゲームオーバー後のリセット
     def reset(self):
         self.board = Board(13,12)
         self.scene = self.SCENE_TITLE
+        self.scene_change_wait = 30
         
 App()
         
