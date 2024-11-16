@@ -91,6 +91,7 @@ class Board:
         if self.grid[click_y][click_x].type == Cell.TYPE_WALL:
             return
         self.openCell(click_x, click_y)
+        pyxel.play(0, 0) # beep音
 
     def onRightClick(self, x, y):
         click_x = (x - self.start_x)//16
