@@ -57,14 +57,14 @@ class Board:
 
         # 壁を設定
         for y in range(self.size_h):
-            self.grid[0][y].type = Cell.TYPE_WALL
-            self.grid[width+1][y].type = Cell.TYPE_WALL
+            self.grid[y][0].type = Cell.TYPE_WALL
+            self.grid[y][width+1].type = Cell.TYPE_WALL
         for x in range(self.size_w):
-            self.grid[x][0].type = Cell.TYPE_WALL
-            self.grid[x][height+1].type = Cell.TYPE_WALL
+            self.grid[0][x].type = Cell.TYPE_WALL
+            self.grid[height+1][x].type = Cell.TYPE_WALL
 
         # 爆弾を設定
-        self.bombSize = 10
+        self.bombSize = 20
 
         # 爆弾が設置していないところに爆弾を設置する
         for i in range(self.bombSize):
@@ -242,7 +242,6 @@ class App:
             draw_text_with_border(75,5, "Game Over!!", 7, 5, self.umplus12)
             if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
                 self.reset()
-                self.scene = App.SCENE_INGAME
 
         # ゲームクリア
         if self.scene == App.SCENE_CLEAR:
@@ -251,7 +250,7 @@ class App:
 
     # ゲーム開始またはゲームオーバー後のリセット
     def reset(self):
-        self.board = Board(10,10)
+        self.board = Board(13,12)
         self.scene = self.SCENE_TITLE
         
 App()
