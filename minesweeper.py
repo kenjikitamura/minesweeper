@@ -191,7 +191,7 @@ class App:
     SCENE_GAME_OVER = 2
     SCENE_CLEAR = 3
     def __init__(self):
-        pyxel.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Test", fps=60)
+        pyxel.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Mine Sweeper", fps=60)
         pyxel.load("data.pyxres")
         pyxel.mouse(True)
         self.reset()
