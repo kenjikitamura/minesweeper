@@ -101,7 +101,6 @@ class Board:
                             pyxel.text(x*16 + 5 + self.start_x, y*16 + 5 + self.start_y, f"{bombCount}", 4)
                     elif item.type == Cell.TYPE_BOMB:
                         pyxel.blt(x*16 + self.start_x, y*16 + self.start_y, 0, 32,0,16,16)
-        pyxel.text(0,0,f"BOMB = {self.bombSize}  FLAGS = {flags}", 5)
 
         # ゲームオーバー時の爆発描画
         if self.bomb is not None:
@@ -196,6 +195,7 @@ class App:
         pyxel.load("data.pyxres")
         pyxel.mouse(True)
         self.reset()
+        self.umplus10 = pyxel.Font("assets/umplus_j10r.bdf")
         self.umplus12 = pyxel.Font("assets/umplus_j12r.bdf")
         self.title_image = pyxel.Image.from_image(filename="assets/title3.png")
         self.scene_change_wait = 0
@@ -253,6 +253,10 @@ class App:
         if self.scene == App.SCENE_CLEAR:
             draw_text_with_border(90,5, "Game Clear!!", 7, 5, self.umplus12)
             self.board.draw()
+
+        # 説明表示
+        if self.scene == App.SCENE_INGAME:
+            draw_text_with_border(5,5, "左クリックでマスを開く 右クリックで爆弾をマーク", 7, 5, self.umplus10)
 
     # ゲーム開始またはゲームオーバー後のリセット
     def reset(self):
