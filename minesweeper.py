@@ -23,6 +23,17 @@ class Vec2:
         self.x = x
         self.y = y
 
+class Bomb:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = 0
+    
+    def update(self):
+        self.size += 1
+
+    def draw(self):
+        pyxel.circ(self.x, self.y, self.size, 8)
 
 class Cell:
     TYPE_EMPTY = 0 # 空欄
@@ -42,6 +53,7 @@ class Board:
         self.start_x = 5
         self.start_y = 20
         self.grid = [[Cell() for _ in range(self.size_w)] for _ in range(self.size_h)]
+        self.bomb = Bomb(0, 0)
 
         # 壁を設定
         for y in range(self.size_h):
@@ -91,6 +103,10 @@ class Board:
                         pyxel.blt(x*16 + self.start_x, y*16 + self.start_y, 0, 32,0,16,16)
         pyxel.text(0,0,f"BOMB = {self.bombSize}  FLAGS = {flags}", 5)
 
+        # ゲームオーバー時の爆発描画
+        if self.bomb is not None:
+            self.bomb.draw()
+
     # クリアしたかチェック
     # クリア = 爆弾以外を開いている かつ、全ての爆弾をチェックしている
     def checkClear(self):
@@ -132,7 +148,15 @@ class Board:
         if self.grid[click_y][click_x].type == Cell.TYPE_WALL:
             return
         self.openCell(click_x, click_y)
+            
         pyxel.play(0, 0) # beep音
+
+        # 開いたのが爆弾だったらゲームオーバー
+        if self.grid[click_y][click_x].type == Cell.TYPE_BOMB:
+            self.bomb = Bomb(x, y)
+            return False
+        else:
+            return True
 
     def onRightClick(self, x, y):
         click_x = (x - self.start_x)//16
@@ -171,9 +195,7 @@ class App:
         pyxel.init(SCREEN_WIDTH, SCREEN_HEIGHT, title="Test", fps=60)
         pyxel.load("data.pyxres")
         pyxel.mouse(True)
-        self.pos = Vec2(0,0)
-        self.board = Board(10,10)
-        self.scene = self.SCENE_TITLE
+        self.reset()
         self.umplus12 = pyxel.Font("assets/umplus_j12r.bdf")
         self.title_image = pyxel.Image.from_image(filename="assets/title3.png")
         pyxel.run(self.update, self.draw)
@@ -188,13 +210,19 @@ class App:
 
         # ゲーム中
         if self.scene == App.SCENE_INGAME:
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-                self.board.onClick(pyxel.mouse_x, pyxel.mouse_y)
+            if pyxel.btnr(pyxel.MOUSE_BUTTON_LEFT):
+                flag = self.board.onClick(pyxel.mouse_x, pyxel.mouse_y)
+                if flag is False:
+                    self.scene = App.SCENE_GAME_OVER
 
-            if pyxel.btnp(pyxel.MOUSE_BUTTON_RIGHT):
+            if pyxel.btnr(pyxel.MOUSE_BUTTON_RIGHT):
                 self.board.onRightClick(pyxel.mouse_x, pyxel.mouse_y)
             if self.board.checkClear():
                 self.scene = App.SCENE_CLEAR
+
+        # ゲームオーバー
+        if self.scene == App.SCENE_GAME_OVER and self.board.bomb is not None:
+            self.board.bomb.update()
         
     def draw(self):
         pyxel.cls(0)
@@ -208,10 +236,23 @@ class App:
         if self.scene == App.SCENE_INGAME:
             self.board.draw()
 
+        # ゲームオーバー
+        if self.scene == App.SCENE_GAME_OVER:
+            self.board.draw()
+            draw_text_with_border(75,5, "Game Over!!", 7, 5, self.umplus12)
+            if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
+                self.reset()
+                self.scene = App.SCENE_INGAME
+
         # ゲームクリア
         if self.scene == App.SCENE_CLEAR:
             draw_text_with_border(75,5, "Game Clear!!", 7, 5, self.umplus12)
             self.board.draw()
+
+    # ゲーム開始またはゲームオーバー後のリセット
+    def reset(self):
+        self.board = Board(10,10)
+        self.scene = self.SCENE_TITLE
         
 App()
         
