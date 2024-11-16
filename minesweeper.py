@@ -25,6 +25,8 @@ class Board:
     def __init__(self, width, height):
         self.size_w = width + 2 # 番兵で+2
         self.size_h = height + 2 # 番兵で+2
+        self.start_x = 5
+        self.start_y = 20
         self.grid = [[Cell() for _ in range(self.size_w)] for _ in range(self.size_h)]
 
         # 壁を設定
@@ -36,34 +38,38 @@ class Board:
             self.grid[x][height+1].type = Cell.TYPE_WALL
 
         # 爆弾を設定
-        BOMB_SIZE = 10
-        for i in range(BOMB_SIZE):
+        self.bombSize = 10
+
+        for i in range(self.bombSize):
             self.grid[random.randrange(0,width)+1][random.randrange(0,height)+1].type = Cell.TYPE_BOMB
 
     def draw(self):
+        flags = 0
         for y, raw in enumerate(self.grid):
             for x, item in enumerate(raw):
                 # 壁を描画
                 if item.type == Cell.TYPE_WALL:
-                    pyxel.blt(x*16,y*16,0, 0,16,16,16)
+                    pyxel.blt(x*16 + self.start_x, y*16 + self.start_y ,0, 0,16,16,16)
 
                 # 爆弾チェックを描画
                 elif item.status == Cell.STATUS_CHECK:
-                    pyxel.blt(x*16,y*16,0, 48,0,16,16)
-                    
+                    pyxel.blt(x*16 + self.start_x, y*16 + self.start_y ,0, 48,0,16,16)
+                    flags += 1
+
                 # 空けてないマスを描画
                 elif item.status == Cell.STATUS_CLOSE:
-                    pyxel.blt(x*16,y*16,0, 0,0,16,16)
+                    pyxel.blt(x*16 + self.start_x, y*16 + self.start_y ,0, 0,0,16,16)
 
                 # 空けているマスを描画
                 else:
                     if item.type == Cell.TYPE_EMPTY:
-                        pyxel.blt(x*16,y*16,0, 16,0,16,16)
+                        pyxel.blt(x*16 + self.start_x, y*16 + self.start_y, 0, 16,0,16,16)
                         bombCount = self.bombCount(x,y)
                         if bombCount > 0:
-                            pyxel.text(x*16 + 5, y*16 + 5, f"{bombCount}", 4)
+                            pyxel.text(x*16 + 5 + self.start_x, y*16 + 5 + self.start_y, f"{bombCount}", 4)
                     elif item.type == Cell.TYPE_BOMB:
-                        pyxel.blt(x*16,y*16,0, 32,0,16,16)
+                        pyxel.blt(x*16 + self.start_x, y*16 + self.start_y, 0, 32,0,16,16)
+        pyxel.text(0,0,f"BOMB = {self.bombSize}  FLAGS = {flags}", 5)
 
     # x,y座標の周りの爆弾の数を取得する
     def bombCount(self, x, y):
@@ -78,8 +84,8 @@ class Board:
 
     # ボードのクリック処理を実行
     def onClick(self, x, y):
-        click_x = x//16
-        click_y = y//16
+        click_x = (x - self.start_x)//16
+        click_y = (y - self.start_y)//16
         if click_x >= self.size_w or click_y >= self.size_h:
             return
         if self.grid[click_y][click_x].type == Cell.TYPE_WALL:
@@ -87,8 +93,8 @@ class Board:
         self.openCell(click_x, click_y)
 
     def onRightClick(self, x, y):
-        click_x = x//16
-        click_y = y//16
+        click_x = (x - self.start_x)//16
+        click_y = (y - self.start_y)//16
         if click_x >= self.size_w or click_y >= self.size_h:
             return
         if self.grid[click_y][click_x].type == Cell.TYPE_WALL:
