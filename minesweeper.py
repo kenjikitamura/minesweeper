@@ -52,10 +52,16 @@ class Board:
             self.grid[x][height+1].type = Cell.TYPE_WALL
 
         # 爆弾を設定
-        self.bombSize = 0
+        self.bombSize = 10
 
+        # 爆弾が設置していないところに爆弾を設置する
         for i in range(self.bombSize):
-            self.grid[random.randrange(0,width)+1][random.randrange(0,height)+1].type = Cell.TYPE_BOMB
+            while True:
+                x = random.randrange(0,width)+1
+                y = random.randrange(0,height)+1
+                if self.grid[y][x].type == Cell.TYPE_EMPTY:
+                    self.grid[y][x].type = Cell.TYPE_BOMB
+                    break
 
     def draw(self):
         flags = 0
@@ -102,6 +108,7 @@ class Board:
                 # 爆弾をチェックしているか
                 if cell.type == Cell.TYPE_BOMB and cell.status != Cell.STATUS_CHECK:
                     isAllCheck = False
+        # print(f"isAllCheck={isAllCheck}, isAllOpen={isAllOpen}")
         return isAllCheck and isAllOpen
 
 
