@@ -11,11 +11,12 @@ class Vec2:
 
 
 class Cell:
-    TYPE_EMPTY = 0
-    TYPE_BOMB = 1
-    TYPE_WALL = 2
-    STATUS_OPEN = 0
-    STATUS_CLOSE = 1
+    TYPE_EMPTY = 0 # 空欄
+    TYPE_BOMB = 1 # 爆弾
+    TYPE_WALL = 2 # 周囲の壁(番兵)
+    STATUS_OPEN = 0 # 開いた状態
+    STATUS_CLOSE = 1 # 開いていない状態
+    STATUS_CHECK = 2 # 開いておらず、爆弾があるとチェックした状態
 
     def __init__(self):
         self.type = Cell.TYPE_EMPTY
@@ -44,8 +45,12 @@ class Board:
             for x, item in enumerate(raw):
                 # 壁を描画
                 if item.type == Cell.TYPE_WALL:
-                    pyxel.blt(x*16,y*16,0, 48,0,16,16)
+                    pyxel.blt(x*16,y*16,0, 0,16,16,16)
 
+                # 爆弾チェックを描画
+                elif item.status == Cell.STATUS_CHECK:
+                    pyxel.blt(x*16,y*16,0, 48,0,16,16)
+                    
                 # 空けてないマスを描画
                 elif item.status == Cell.STATUS_CLOSE:
                     pyxel.blt(x*16,y*16,0, 0,0,16,16)
@@ -81,6 +86,20 @@ class Board:
             return
         self.openCell(click_x, click_y)
 
+    def onRightClick(self, x, y):
+        click_x = x//16
+        click_y = y//16
+        if click_x >= self.size_w or click_y >= self.size_h:
+            return
+        if self.grid[click_y][click_x].type == Cell.TYPE_WALL:
+            return
+        if self.grid[click_y][click_x].status == Cell.STATUS_OPEN:
+            return
+        if self.grid[click_y][click_x].status == Cell.STATUS_CLOSE:
+            self.grid[click_y][click_x].status = Cell.STATUS_CHECK
+        else:
+            self.grid[click_y][click_x].status = Cell.STATUS_CLOSE
+
     # マスを開く処理
     def openCell(self, x, y):
         self.grid[y][x].status = Cell.STATUS_OPEN
@@ -109,14 +128,14 @@ class App:
             pyxel.quit()
 
         if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
-            self.pos.x = pyxel.mouse_x
-            self.pos.y = pyxel.mouse_y
             self.board.onClick(pyxel.mouse_x, pyxel.mouse_y)
+
+        if pyxel.btnp(pyxel.MOUSE_BUTTON_RIGHT):
+            self.board.onRightClick(pyxel.mouse_x, pyxel.mouse_y)
 
     def draw(self):
         pyxel.cls(0)
         pyxel.text(55,41,"Hello, Pyxel!", pyxel.frame_count % 16)
-        pyxel.text(self.pos.x, self.pos.y, "HERE!", 5)
         self.board.draw()
         
 App()
